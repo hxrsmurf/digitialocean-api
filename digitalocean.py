@@ -15,6 +15,12 @@ image = 'debian-10-x64'
 region = 'nyc1'
 size = 's-1vcpu-1gb'
 name = 'apitest'
+userData = """
+#cloud-config
+runcmd: 
+ - ssh-keygen
+ - echo "stuff" > /root/stuff.txt
+"""
 
 def create_droplet():
     api_url = '{0}droplets'.format(api_url_base)
@@ -23,7 +29,8 @@ def create_droplet():
         "region": region,
         "size": size,
         "image": image,
-        "ssh_keys": [key]
+        "ssh_keys": [key],
+        "user_data": userData,          
     }
     response = requests.post(api_url, headers=headers, json=body)
 
