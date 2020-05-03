@@ -51,6 +51,42 @@ def delete_droplet(dropletID):
     droplet_url = api_url + '/' + dropletID
     response = requests.delete(droplet_url, headers=headers)
 
+def list_domains():
+	api_url = api_url_base + "domains"
+	response = requests.get(api_url, headers=headers)
+	domains = json.loads(response.content.decode('utf-8'))
+	for k, v in enumerate(domains['domains']):
+		print('{0}:{1}'.format(k, v['name']))
+	  
+def list_domain_records(domain):
+	api_url = api_url_base + "domains/" + domain + "/records"
+	response = requests.get(api_url, headers=headers)
+	domainsRecords = json.loads(response.content.decode('utf-8'))
+	for k, v in enumerate(domainsRecords['domain_records']):
+		print('{0}:{1}:{2}:{3}'.format(v['id'],v['type'],v['name'],v['data']))
+	  
+def create_domain_record(domain, type, name, data):
+	api_url = api_url_base + "domains/" + domain + "/records"
+	body = {
+		"type": type,
+		"name": name,
+		"data": data
+	}
+	response = requests.post(api_url, headers=headers, json=body)
+	print(response)
+	
+def update_domain_record(domain, data, recordID):
+	api_url = api_url_base + "domains/" + domain + "/records/" + recordID
+	body = {
+		"data": data
+	}
+	response = requests.put(api_url, headers=headers, json=body)
+	print(response)
+	
+def myIP():
+	response = requests.get("https://api.ipify.org").text
+	update_domain_record("hxrsmurf.info",response,"95875744")
+
 parser = argparse.ArgumentParser(description=description, formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("-g", "--get", action='store_true', help="Get Droplets")
 parser.add_argument("-c", "--create", action='store_true', help="Create Droplet")
