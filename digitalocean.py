@@ -22,7 +22,7 @@ runcmd:
  - echo "stuff" > /root/stuff.txt
 """
 
-def create_droplet():
+def createDroplet():
     api_url = '{0}droplets'.format(api_url_base)
     body = {
         "name": name + '-' + (time.strftime("%Y-%m-%d-%H-%M")),
@@ -34,7 +34,7 @@ def create_droplet():
     }
     response = requests.post(api_url, headers=headers, json=body)
 
-def get_droplet():
+def getDroplet():
     api_url = '{0}droplets'.format(api_url_base)
     response = requests.get(api_url, headers=headers)
     droplets = json.loads(response.content.decode('utf-8'))
@@ -46,26 +46,26 @@ def get_droplet():
                         v = v['v4'][0]['ip_address']
                     print('{0}:{1}'.format(k, v))
 
-def delete_droplet(dropletID):
+def deleteDroplet(dropletID):
     api_url = '{0}droplets'.format(api_url_base)
     droplet_url = api_url + '/' + dropletID
     response = requests.delete(droplet_url, headers=headers)
 
-def list_domains():
+def listDomains():
 	api_url = api_url_base + "domains"
 	response = requests.get(api_url, headers=headers)
 	domains = json.loads(response.content.decode('utf-8'))
 	for k, v in enumerate(domains['domains']):
 		print('{0}:{1}'.format(k, v['name']))
 	  
-def list_domain_records(domain):
+def listDomainRecords(domain):
 	api_url = api_url_base + "domains/" + domain + "/records"
 	response = requests.get(api_url, headers=headers)
 	domainsRecords = json.loads(response.content.decode('utf-8'))
 	for k, v in enumerate(domainsRecords['domain_records']):
 		print('{0}:{1}:{2}:{3}'.format(v['id'],v['type'],v['name'],v['data']))
 	  
-def create_domain_record(domain, type, name, data):
+def createDomainRecord(domain, type, name, data):
 	api_url = api_url_base + "domains/" + domain + "/records"
 	body = {
 		"type": type,
@@ -75,7 +75,7 @@ def create_domain_record(domain, type, name, data):
 	response = requests.post(api_url, headers=headers, json=body)
 	print(response)
 	
-def update_domain_record(domain, data, recordID):
+def updateDomainRecord(domain, data, recordID):
 	api_url = api_url_base + "domains/" + domain + "/records/" + recordID
 	body = {
 		"data": data
