@@ -86,3 +86,14 @@ function myIP {
 	$request = (Invoke-WebRequest -URI $ipifyURL).content
 	return $request
 }
+
+function listDomains {
+	$apiURL = $apiBase + "domains"
+	$domains = ((Invoke-WebRequest -URI $apiURL -Headers $headers).content | ConvertFrom-JSON).domains
+	
+	foreach ($domain in $domains) {
+		Write-Host $domain.name
+		$output += $domain.name + "|"
+	}
+	return $output
+}
