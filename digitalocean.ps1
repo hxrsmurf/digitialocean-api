@@ -80,3 +80,9 @@ function getDroplet {
 	$fileName = "DigitalOcean-Droplets-" + $fileDate + ".csv"
 	$output | Export-CSV -Delimiter "|" -NoTypeInformation -Path $fileName
 }
+
+function myIP {
+	$ipifyURL = "https://api.ipify.org"
+	$request = (Invoke-WebRequest -URI $ipifyURL).content
+	return $request
+}
