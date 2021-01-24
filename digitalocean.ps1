@@ -91,9 +91,58 @@ function listDomains {
 	$apiURL = $apiBase + "domains"
 	$domains = ((Invoke-WebRequest -URI $apiURL -Headers $headers).content | ConvertFrom-JSON).domains
 	
+	$output = @()
+	
 	foreach ($domain in $domains) {
-		Write-Host $domain.name
-		$output += $domain.name + "|"
+		$domainObject = New-Object -TypeName PSObject
+		$domainObject | Add-Member -MemberType NoteProperty -Name "domain" -Value $domain
+		$output += $domainObject
 	}
+	
 	return $output
+}
+
+function listDomainRecords ($domain) {
+	if ($domain.length -eq 0){
+		Write-Host "No input"
+		return
+	}
+
+	$output = @()
+	$apiURL = $apiBase + "domains/" + $domain + "/records"
+	$records = ((Invoke-WebRequest -URI $apiURL -Headers $headers).content | ConvertFrom-JSON).domain_records
+	
+	foreach ($record in $records){
+		$recordObject = New-Object -TypeName PSObject
+	
+		$recordInfo = [ordered]@{
+			id = $record.id
+			type = $record.type
+			name = $record.name
+			data = $record.data
+		}
+	
+		foreach($key in $recordInfo.keys) {
+			$recordObject | Add-Member -MemberType NoteProperty -Name $key -Value $recordInfo[$key]
+		}
+		$output += $recordObject
+	}
+	
+	$fileDate = Get-Date -format "yyyyMMdd-HHmm"
+	
+	$folderPath =  "$(pwd)\reports\"
+	if (! (Test-Path $folderPath)){
+		New-Item -Path $folderPath -ItemType "directory"
+	}
+	
+	$fileName = $folderPath + $domain + "-records-" + $fileDate + ".csv"
+	Write-Host $fileName
+	$output | Export-CSV -Delimiter "|" -NoTypeInformation -Path $fileName
+}
+
+function getDomainRecords {
+	$domains = listDomains
+	foreach ($domain in $domains.domain){
+		listDomainRecords $domain.name
+	}
 }
