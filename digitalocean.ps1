@@ -186,3 +186,45 @@ function createDomainRecord {
 	
 	return $request
 }
+
+function updateDomainRecord {
+	Param(
+		[Parameter(Position=0)]
+		[String[]]
+		$domain,
+		
+		[Parameter(Position=1)]
+		[String[]]
+		$type,
+		
+		[Parameter(Position=2)]
+		[String[]]
+		$name,
+		
+		[Parameter(Position=3)]
+		[String[]]
+		$value,
+		
+		[Parameter(Position=4)]
+		[String[]]
+		$recordID
+	)
+	
+	$body = @{
+		type = "$type"
+		name = "$name"
+		data = "$value"
+		ttl = 1800
+	} | ConvertTo-JSON
+
+	$apiURL = $apiBase + "domains/" + $domain + "/records/" + $recordID
+	
+	$body = @{
+		name = "$name"
+	} | ConvertTo-JSON
+	
+	Write-Host $apiURL
+	
+	$request = Invoke-WebRequest -URI $apiURL -Headers $headers -body $body -Method PUT
+	return $request
+}
