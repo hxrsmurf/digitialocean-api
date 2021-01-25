@@ -1,0 +1,5 @@
+name,value
+api_token, [YourAPIToken]
+key, [YourSSHKey]
+home, garland
+apiBase, https://api.digitalocean.com/v2/
