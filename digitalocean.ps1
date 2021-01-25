@@ -8,6 +8,7 @@ foreach ($c in $config){
 	switch ($c.name){
 		"api_token" { $apiToken = $c.value }
 		"key" { $sshKey = $c.value }
+		"home" { $homeName = $c.value }
 	}
 }
 
@@ -88,6 +89,16 @@ function getDroplet {
 function myIP {
 	$ipifyURL = "https://api.ipify.org"
 	$request = (Invoke-WebRequest -URI $ipifyURL).content
+	
+	# updateDomainRecord domain type name value recordid
+	# createDomainRecord domain type name value
+	
+	$domains = listDomains
+	
+	foreach ($domain in $domains.domain){
+		createDomainRecord $domain.name "A" "$homeName" $request
+	}
+	
 	return $request
 }
 
@@ -171,6 +182,8 @@ function createDomainRecord {
 		$value
 	)
 	
+	# createDomainRecord domain type name value
+	
 	if ($domain.length -eq 0){
 		"No input"
 		return
@@ -214,11 +227,16 @@ function updateDomainRecord {
 		$recordID
 	)
 	
+	# Backup Records first
+	listDomainRecords $domain
+	
+	# updateDomainRecord domain type name value recordid
+	
 	$body = @{
 		type = "$type"
 		name = "$name"
 		data = "$value"
-		ttl = 1800
+		ttl = 300
 	} | ConvertTo-JSON
 
 	$apiURL = $apiBase + "domains/" + $domain + "/records/" + $recordID
@@ -243,6 +261,9 @@ function deleteDomainRecord {
 		[String[]]
 		$recordID
 	)
+	
+	# Backup Records first
+	listDomainRecords $domain
 
 	$apiURL = $apiBase + "domains/" + $domain + "/records/" + $recordID
 	
