@@ -228,3 +228,41 @@ function updateDomainRecord {
 	$request = Invoke-WebRequest -URI $apiURL -Headers $headers -body $body -Method PUT
 	return $request
 }
+
+function deleteDomainRecord {
+	Param(
+		[Parameter(Position=0)]
+		[String[]]
+		$domain,
+		
+		[Parameter(Position=1)]
+		[String[]]
+		$recordID
+	)
+
+	$apiURL = $apiBase + "domains/" + $domain + "/records/" + $recordID
+	
+	$request = Invoke-WebRequest -URI $apiURL -Headers $headers -Method DELETE
+	
+	if ($request.StatusCode -eq 204) {Write-Host "Deleted $recordID!"} else { "Not complete." }
+}
+
+function bulkDeleteDomainRecords {
+	Param(
+		[Parameter(Position=0)]
+		[String[]]
+		$domain,
+		
+		[Parameter(Position=1)]
+		[String[]]
+		$recordIDs
+	)
+	
+	# Backup Records first
+	listDomainRecords $domain
+	
+	foreach ($recordID in $recordIDs){
+		Write-Host $recordID
+		deleteDomainRecord $domain $recordID
+	}
+}
