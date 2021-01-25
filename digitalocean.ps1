@@ -7,12 +7,12 @@ $config = Import-Csv "$(pwd)\Config\config.csv"
 foreach ($c in $config){
 	switch ($c.name){
 		"api_token" { $apiToken = $c.value }
-		"key" { $key = $c.value }
+		"key" { $sshKey = $c.value }
 	}
 }
 
 $apiToken = $apiToken
-$apiKey = $apiKey
+$sshKey = $sshKey
 $apiBase = "https://api.digitalocean.com/v2/"
 
 $bearerToken = "Bearer " + $apiToken
@@ -23,6 +23,8 @@ $headers = @{
 }
 
 function getDroplet {
+	# Need to update to support multiple droplets
+	
 	$apiURL = $apiBase + "droplets"
 
 	$request = ((Invoke-WebRequest -URI $apiURL -Method GET -Headers $headers).content | ConvertFrom-JSON).droplets
@@ -77,8 +79,10 @@ function getDroplet {
 	$output += $dropletObject
 	
 	$fileDate = Get-Date -format "yyyyMMdd-HHmm"
-	$fileName = "DigitalOcean-Droplets-" + $fileDate + ".csv"
+	$fileName = $folderPath + "Droplets-" + $fileDate + ".csv"
+	Write-Host $fileName	
 	$output | Export-CSV -Delimiter "|" -NoTypeInformation -Path $fileName
+	return $output
 }
 
 function myIP {
@@ -265,4 +269,33 @@ function bulkDeleteDomainRecords {
 		Write-Host $recordID
 		deleteDomainRecord $domain $recordID
 	}
+}
+
+function createDroplet {
+	$sshKey
+	$image = "debian-10-x64"
+	$region = "nyc1"
+	$size = "s-1vcpu-1gb"
+	$name = "api-$(Get-Date -format "yyMMdd-HHmm")"
+	
+	$body = @{
+        "name" = $name
+        "region" = $region
+        "size" = $size
+        "image" = $image
+        "ssh_keys" = "$sshKey"	
+	} | ConvertTo-JSON
+	
+	$apiURL = $apiBase + "droplets"
+	
+	$request = Invoke-WebRequest -URI $apiURL -Method POST -headers $headers -body $body
+	if ($request.StatusCode -eq 202) {Write-Host "Success!"} else { "Not Successful." }
+	return $request
+}
+
+function deleteDroplet ($dropletID) {
+	$apiURL = $apiBase + "droplets/" + $dropletID
+	$request = Invoke-WebRequest -URI $apiURL -Method DELETE -headers $headers
+	if ($request.StatusCode -eq 204) {Write-Host "Success!"} else { "Not Successful." }
+	return $request
 }
