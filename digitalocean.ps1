@@ -138,6 +138,7 @@ function listDomainRecords ($domain) {
 	$fileName = $folderPath + $domain + "-records-" + $fileDate + ".csv"
 	Write-Host $fileName
 	$output | Export-CSV -Delimiter "|" -NoTypeInformation -Path $fileName
+	return $output
 }
 
 function getDomainRecords {
@@ -145,4 +146,43 @@ function getDomainRecords {
 	foreach ($domain in $domains.domain){
 		listDomainRecords $domain.name
 	}
+}
+
+function createDomainRecord {
+	Param(
+		[Parameter(Position=0)]
+		[String[]]
+		$domain,
+		
+		[Parameter(Position=1)]
+		[String[]]
+		$type,
+		
+		[Parameter(Position=2)]
+		[String[]]
+		$name,
+		
+		[Parameter(Position=3)]
+		[String[]]
+		$value
+	)
+	
+	if ($domain.length -eq 0){
+		"No input"
+		return
+	}	
+	
+	$body = @{
+		type = "$type"
+		name = "$name"
+		data = "$value"
+		ttl = 1800
+	} | ConvertTo-JSON
+	
+	$apiURL = $apiBase + "domains/" + $domain + "/records"
+	$request = Invoke-WebRequest -URI $apiURL -Headers $headers -body $body -Method POST
+	
+	if ($request.StatusCode -eq 201) {Write-Host "Created!"}
+	
+	return $request
 }
