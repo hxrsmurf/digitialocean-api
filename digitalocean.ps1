@@ -1,152 +1,28 @@
 <#
 	DigitalOcean PowerShell Script
+	Last Update: 2021-02-13
 #>
 
-$config = Import-Csv "$(pwd)\Config\config.csv"
 
-foreach ($c in $config){
-	switch ($c.name){
-		"api_token" { $apiToken = $c.value }
-		"key" { $sshKey = $c.value }
-		"home" { $homeName = $c.value }
-		"apiBase" { $apiBase = $c.value }
-	}
+$functions = Get-ChildItem Functions | Select FullName
+foreach ($function in $functions.FullName){
+		. $function
 }
 
-$bearerToken = "Bearer " + $apiToken
+$config = environment
+$headers = login $config.apiToken
 
-$headers = @{
-	"Content-Type" = "application/json"
-	"Authorization" = $bearerToken
+switch ($args[0]){
+	# Need to pass my variables better
+	getDomainRecords { $domains = listDomains $config.apiBase $headers ; getDomainRecords $domains }
+	
+	getDroplets { getDroplets $config.apiBase $headers $args[1] }
+	listDomains { listDomains $config.apiBase $headers }
+	listDomainRecords { listDomainRecords $config.apiBase $headers $args[1] $args[2] }	
+	default { Get-ChildItem -Name Functions }
 }
 
-function getDroplet {
-	# Need to update to support multiple droplets
-	
-	$apiURL = $apiBase + "droplets"
-
-	$request = ((Invoke-WebRequest -URI $apiURL -Method GET -Headers $headers).content | ConvertFrom-JSON).droplets
-	
-	$output = @()
-	
-	foreach ($r in $request){
-		$dropletObject = New-Object -TypeName PSObject
-		$networks = @()
-		
-		foreach ($network in $request.networks.v4){
-			$networkObject = New-Object -TypeName PSObject
-		
-			if ($network.gateway){
-				$gateway = $network.gateway
-			} else {
-				$gateway = "null"
-			}
-			
-			$networkInfo = [ordered]@{
-				ipAddress = $network.ip_address
-				subnet = $network.netmask
-				gateway = $gateway
-			}		
-			
-			foreach($key in $networkInfo.keys) {
-				$networkObject | Add-Member -MemberType NoteProperty -Name $key -Value $networkInfo[$key]
-			}
-			
-			$networks += $networkObject
-		}		
-		
-		foreach ($n in $networks){
-			$networkArray += $n.ipAddress + "," + $n.subnet + "," + $n.gateway + ";"
-		}
-		
-		$dropletInfo = [ordered]@{
-			dropletID = $r.id
-			dropletName = $r.name
-			dropletMemory = $r.memory
-			dropletVCPUs = $r.vcpus
-			dropletDisk = $r.disk
-			dropletStatus = $r.status
-			dropletNetworks = $networkArray
-		}		
-	}	
-	
-	foreach($key in $dropletInfo.keys) {
-		$dropletObject | Add-Member -MemberType NoteProperty -Name $key -Value $dropletInfo[$key]
-	}
-	
-	$output += $dropletObject
-	
-	$fileDate = Get-Date -format "yyyyMMdd-HHmm"
-	$fileName = $folderPath + "Droplets-" + $fileDate + ".csv"
-	Write-Host $fileName	
-	$output | Export-CSV -Delimiter "|" -NoTypeInformation -Path $fileName
-	return $output
-}
-
-function listDomains {
-	$apiURL = $apiBase + "domains"
-	$domains = ((Invoke-WebRequest -URI $apiURL -Headers $headers).content | ConvertFrom-JSON).domains
-	
-	$output = @()
-	
-	foreach ($domain in $domains) {
-		$domainObject = New-Object -TypeName PSObject
-		$domainObject | Add-Member -MemberType NoteProperty -Name "domain" -Value $domain
-		$output += $domainObject
-	}
-	
-	return $output
-}
-
-function listDomainRecords ($domain, $export) {
-	if ($domain.length -eq 0){
-		Write-Host "No input"
-		return
-	}
-
-	$output = @()
-	$apiURL = $apiBase + "domains/" + $domain + "/records"
-	$records = ((Invoke-WebRequest -URI $apiURL -Headers $headers).content | ConvertFrom-JSON).domain_records
-	
-	foreach ($record in $records){
-		$recordObject = New-Object -TypeName PSObject
-	
-		$recordInfo = [ordered]@{
-			id = $record.id
-			type = $record.type
-			name = $record.name
-			data = $record.data
-		}
-	
-		foreach($key in $recordInfo.keys) {
-			$recordObject | Add-Member -MemberType NoteProperty -Name $key -Value $recordInfo[$key]
-		}
-		$output += $recordObject
-	}
-	
-	$fileDate = Get-Date -format "yyyyMMdd-HHmm"
-	
-	$folderPath =  "$(pwd)\reports\"
-	if (! (Test-Path $folderPath)){
-		New-Item -Path $folderPath -ItemType "directory"
-	}
-	
-	if ($export -eq $true){
-		$fileName = $folderPath + $domain + "-records-" + $fileDate + ".csv"
-		Write-Host $fileName
-		$output | Export-CSV -Delimiter "|" -NoTypeInformation -Path $fileName
-		return $output
-	}
-	
-	return $output
-}
-
-function getDomainRecords {
-	$domains = listDomains
-	foreach ($domain in $domains.domain){
-		listDomainRecords $domain.name $true
-	}
-}
+# Still need to convert the below.
 
 function createDomainRecord {
 	Param(
