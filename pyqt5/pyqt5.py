@@ -26,14 +26,23 @@ class PyQt5(QtWidgets.QMainWindow, gui.Ui_MainWindow):
     def login(self):
         self.setHeaders()
         self.aPIIDLineEdit.setEnabled(0)
-        self.loginStatus.setText(self.account())
-        self.getDropletInfo()
-        self.listDomains()
+        
+        loginState = self.account()
+        
+        if (loginState == 200):
+            self.loginStatus.setText("Logged In")
+            self.getDropletInfo()
+            self.listDomains()
+        else:
+            self.errorMessage()
         
     def setHeaders(self):
         api_url_base = 'https://api.digitalocean.com/v2/'
+        self.aPIIDLineEdit.setText(None)
+        
         headers = {'Content-Type': 'application/json',
             'Authorization': 'Bearer {0}'.format(self.aPIIDLineEdit.text())}
+            
         return (api_url_base, headers)
         
     def logout(self):
@@ -82,9 +91,10 @@ class PyQt5(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         api_url = '{0}account'.format(getHeaders[0])
         
         response = requests.get(api_url, headers=getHeaders[1])
-        response = json.loads(response.content.decode('utf-8'))
+        statusCode = response.status_code
         
-        if (response['account']):
+        if (statusCode == 200):
+            response = json.loads(response.content.decode('utf-8'))
             #self.accountInfo.setRowCount(len(response['account']))
             self.accountInfo.setRowCount(7)
             self.accountInfo.setColumnCount(1)            
@@ -95,9 +105,9 @@ class PyQt5(QtWidgets.QMainWindow, gui.Ui_MainWindow):
                 self.accountInfo.setItem(row,1, QTableWidgetItem(str(value)))
                 self.accountInfo.setVerticalHeaderItem(row, QTableWidgetItem(key))
                 row += 1
-            return(response['account']['status'])
+            return (statusCode)
         else:
-            return self.errorMessage()
+            return None
     
     def listDomains(self):
         getHeaders = self.setHeaders()
