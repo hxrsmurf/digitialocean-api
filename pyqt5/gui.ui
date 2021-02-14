@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1603</width>
-    <height>873</height>
+    <width>1753</width>
+    <height>1268</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,7 @@
      <rect>
       <x>1260</x>
       <y>10</y>
-      <width>321</width>
+      <width>461</width>
       <height>161</height>
      </rect>
     </property>
@@ -465,13 +465,27 @@
      </property>
     </widget>
    </widget>
+   <widget class="QStackedWidget" name="stackedWidget">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>860</y>
+      <width>1001</width>
+      <height>291</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="page"/>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1603</width>
+     <width>1753</width>
      <height>21</height>
     </rect>
    </property>
@@ -555,5 +569,24 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>tabledomainRecords</sender>
+   <signal>cellDoubleClicked(int,int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>editDomainRecord()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>758</x>
+     <y>352</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>767</x>
+     <y>273</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>editDomainRecord()</slot>
+ </slots>
 </ui>

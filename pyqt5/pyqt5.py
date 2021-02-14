@@ -2,9 +2,17 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QTableWidgetItem
 import sys
 import gui
+import guieditDomainRecords
 import requests
 from datetime import datetime
 import json
+
+
+class DomainRecordWindow(QtWidgets.QMainWindow, guieditDomainRecords.Ui_Frame):
+    def __init__(self, object):
+        super(DomainRecordWindow, self).__init__()
+        self.setupUi(self)
+        self.plainTextEdit.setPlainText(str(object))
 
 class PyQt5(QtWidgets.QMainWindow, gui.Ui_MainWindow):
     #pyuic5 gui.ui -o gui.py
@@ -12,7 +20,7 @@ class PyQt5(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         super(PyQt5, self).__init__(parent)
         self.setupUi(self)
         
-        self.iPAddressLineEdit.setText(self.myIP())        
+        #self.iPAddressLineEdit.setText(self.myIP())        
         self.buttonLogin.clicked.connect(self.login)
         self.buttonLogout.clicked.connect(self.logout)
         
@@ -23,6 +31,12 @@ class PyQt5(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         self.actionQuit.triggered.connect(self.quit)        
         self.buttonQuit.clicked.connect(self.quit)
         
+    def editDomainRecord(self):
+        # https://www.learnpyqt.com/tutorials/creating-multiple-windows/
+        item = self.tabledomainRecords.currentItem().text()
+        self.window = DomainRecordWindow(item)
+        self.window.show()
+    
     def login(self):
         self.setHeaders()
         self.aPIIDLineEdit.setEnabled(0)
@@ -38,7 +52,7 @@ class PyQt5(QtWidgets.QMainWindow, gui.Ui_MainWindow):
         
     def setHeaders(self):
         api_url_base = 'https://api.digitalocean.com/v2/'
-        self.aPIIDLineEdit.setText(None)
+        self.aPIIDLineEdit.setText("")
         
         headers = {'Content-Type': 'application/json',
             'Authorization': 'Bearer {0}'.format(self.aPIIDLineEdit.text())}
