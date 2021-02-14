@@ -21,3 +21,7 @@ I use this to create a quick jump box.
 - createDroplet
 - deleteDroplet
 - myIP (get's myIP and updates the DNS records, this is a WIP as the update APi doesn't seem to like data)
+
+# PyQt5 GUI
+
+![](pyqt5\pyqt5.png)
