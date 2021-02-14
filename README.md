@@ -24,4 +24,4 @@ I use this to create a quick jump box.
 
 # PyQt5 GUI
 
-![](pyqt5\pyqt5.png)
+![](pyqt5/pyqt5.png)
