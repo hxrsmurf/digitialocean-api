@@ -4,7 +4,7 @@ Uses [DigitalOcean](https://digitalocean.com) [API V2](https://developers.digita
 
 I use this to create a quick jump box.
 
-1. Create a (personal access token)(https://www.digitalocean.com/docs/apis-clis/api/create-personal-access-token/)
+1. Create a [personal access token](https://www.digitalocean.com/docs/apis-clis/api/create-personal-access-token/)
 2. PowerShell (most up-to-date) and Python version
 3. Useful functions I use
 
